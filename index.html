@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaxAnalytics Pro - Modern Edition</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        :root { 
+            --accent: #F95211; 
+            --accent-light: #FFF2ED;
+            --text-main: #1A1A1A; 
+            --text-sub: #64748B; 
+            --blue: #0284C7; 
+            --bg: #F8FAFC;
+            --card-bg: #FFFFFF;
+            --border: #E2E8F0;
+        }
+
+        * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+
+        body { 
+            font-family: 'Inter', 'Be Vietnam Pro', sans-serif; 
+            background: var(--bg); 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 40px 20px; 
+            margin: 0; 
+            color: var(--text-main);
+            line-height: 1.5;
+        }
+
+        .container { 
+            background: var(--card-bg); 
+            padding: 40px; 
+            border-radius: 24px; 
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+            width: 100%; 
+            max-width: 680px; 
+            border: 1px solid var(--border);
+        }
+
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+        
+        .logo-text { 
+            margin: 0; 
+            color: var(--accent); 
+            font-weight: 800; 
+            font-size: 32px; 
+            letter-spacing: -1.5px;
+            font-family: 'Be Vietnam Pro', sans-serif;
+        }
+
+        .lang-select { 
+            padding: 10px 16px; 
+            border-radius: 12px; 
+            border: 1px solid var(--border); 
+            font-weight: 600; 
+            font-family: inherit; 
+            cursor: pointer;
+            background: #FFF;
+            font-size: 14px;
+            color: var(--text-main);
+            transition: all 0.2s;
+        }
+
+        .lang-select:hover { border-color: var(--accent); }
+
+        .label-group { 
+            font-size: 12px; 
+            font-weight: 700; 
+            color: var(--text-sub); 
+            text-transform: uppercase; 
+            margin-bottom: 12px; 
+            display: block; 
+            letter-spacing: 1px; 
+        }
+
+        .tabs { 
+            display: flex; 
+            background: #F1F5F9; 
+            border-radius: 16px; 
+            padding: 6px; 
+            gap: 4px; 
+            margin-bottom: 24px; 
+        }
+
+        .tab-btn { 
+            flex: 1; 
+            text-align: center; 
+            padding: 14px; 
+            cursor: pointer; 
+            border-radius: 12px; 
+            font-weight: 600; 
+            font-size: 15px; 
+            color: var(--text-sub); 
+            border: none; 
+            background: none; 
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
+
+        .tab-btn.active { 
+            background: white; 
+            color: var(--accent); 
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .f-item { margin-bottom: 24px; }
+        
+        label { 
+            font-weight: 600; 
+            font-size: 16px; 
+            display: block; 
+            margin-bottom: 10px;
+            color: var(--text-main);
+        }
+
+        input, select.f-input { 
+            width: 100%; 
+            padding: 16px 20px; 
+            border: 1.5px solid var(--border); 
+            border-radius: 16px; 
+            font-size: 18px; 
+            font-weight: 500;
+            box-sizing: border-box; 
+            font-family: inherit; 
+            outline: none;
+            transition: all 0.2s;
+            color: var(--text-main);
+        }
+
+        input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-light); }
+
+        .btn-calc { 
+            width: 100%; 
+            padding: 22px; 
+            background: var(--accent);
+            color: white; 
+            border: none; 
+            border-radius: 18px; 
+            font-weight: 700; 
+            font-size: 18px; 
+            cursor: pointer; 
+            margin-top: 10px; 
+            transition: transform 0.2s, filter 0.2s;
+            font-family: 'Be Vietnam Pro', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-calc:hover { filter: brightness(1.1); transform: translateY(-2px); }
+        .btn-calc:active { transform: translateY(0); }
+
+        /* KHUNG REPORT A5 - CỰC SẮC NÉT */
+        #capture-zone { 
+            display: none; 
+            width: 480px; 
+            background: white; 
+            padding: 40px; 
+            border-radius: 4px; /* Để khi chụp ảnh ra cảm giác như tờ giấy */
+            box-sizing: border-box; 
+            margin-top: 40px;
+        }
+
+        .a5-inner { border: 1.5px solid #F1F5F9; padding: 32px; border-radius: 20px; }
+
+        .a5-title { 
+            color: var(--accent); 
+            font-size: 24px; 
+            font-weight: 800; 
+            text-align: center; 
+            margin-bottom: 30px; 
+            letter-spacing: -0.5px;
+            font-family: 'Be Vietnam Pro', sans-serif;
+        }
+
+        .res-row { 
+            display: flex; 
+            justify-content: space-between; 
+            padding: 16px 0; 
+            border-bottom: 1px solid #F1F5F9; 
+            font-size: 17px; 
+            font-weight: 500;
+        }
+
+        .net-box { 
+            background: #FFF7F5; 
+            border-radius: 24px; 
+            padding: 30px; 
+            text-align: center; 
+            margin: 30px 0; 
+            border: 1px solid var(--accent-light);
+        }
+
+        .net-label { font-size: 13px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
+        .net-val { font-size: 42px; color: var(--accent); font-weight: 800; letter-spacing: -1px; }
+
+        .comp-tag { 
+            background: #F0F9FF; 
+            border-left: 4px solid var(--blue); 
+            padding: 20px; 
+            border-radius: 16px; 
+            font-size: 14px; 
+            line-height: 1.6; 
+            color: #0C4A6E;
+            font-weight: 500;
+        }
+
+        .footer-note { 
+            font-size: 11px; 
+            color: #94A3B8; 
+            margin-top: 30px; 
+            text-align: center; 
+            line-height: 1.5; 
+            font-weight: 400;
+        }
+
+        .dl-wrap { margin-top: 30px; display: none; width: 100%; max-width: 480px; }
+        .btn-dl { 
+            width: 100%; 
+            background: var(--text-main); 
+            color: white; 
+            padding: 18px; 
+            border: none; 
+            border-radius: 16px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            font-size: 16px;
+            transition: background 0.2s;
+        }
+        .btn-dl:hover { background: #000; }
+
+        /* Responsive cho Mobile */
+        @media (max-width: 600px) {
+            .container { padding: 24px; }
+            .logo-text { font-size: 26px; }
+            input, select.f-input { font-size: 16px; padding: 14px; }
+            .btn-calc { padding: 18px; font-size: 16px; }
+            #capture-zone { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1 class="logo-text">TaxAnalytics</h1>
+        <select class="lang-select" onchange="updateLang(this.value)">
+            <option value="vi">🇻🇳 Tiếng Việt</option>
+            <option value="en">🇺🇸 English</option>
+            <option value="kr">🇰🇷 한국어</option>
+            <option value="jp">🇯🇵 日本語</option>
+            <option value="cn">🇨🇳 中文</option>
+        </select>
+    </div>
+
+    <span class="label-group" data-key="lbl_method">Chế độ tính toán</span>
+    <div class="tabs" id="m-tabs">
+        <button class="tab-btn active" onclick="setCfg('m','G2N',this)">GROSS → NET</button>
+        <button class="tab-btn" onclick="setCfg('m','N2G',this)">NET → GROSS</button>
+    </div>
+
+    <span class="label-group" data-key="lbl_worker">Đối tượng</span>
+    <div class="tabs" id="w-tabs">
+        <button class="tab-btn active" onclick="setCfg('w','VN',this)" data-key="btn_vn">Lao động VN</button>
+        <button class="tab-btn" onclick="setCfg('w','FOR',this)" data-key="btn_for">Nước ngoài</button>
+    </div>
+
+    <span class="label-group" data-key="lbl_year">Năm áp dụng</span>
+    <div class="tabs" id="y-tabs">
+        <button class="tab-btn active" onclick="setCfg('y',2026,this)">Luật 2026</button>
+        <button class="tab-btn" onclick="setCfg('y',2025,this)">Luật 2025</button>
+    </div>
+
+    <div class="f-item">
+        <label id="income-label">Số tiền (Gross)</label>
+        <input type="text" id="val-income" oninput="fm(this)" placeholder="0">
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div class="f-item"><label data-key="lbl_dep">Người phụ thuộc</label><input type="number" id="val-deps" value="0"></div>
+        <div class="f-item"><label data-key="lbl_extra">Giảm trừ khác</label><input type="text" id="val-extra" oninput="fm(this)" value="0"></div>
+    </div>
+
+    <div class="f-item">
+        <label data-key="lbl_ins">Lương đóng Bảo hiểm</label>
+        <select class="f-input" id="ins-type" onchange="toggleIns()">
+            <option value="full" data-key="opt_full">100% lương</option>
+            <option value="fixed" data-key="opt_fix">Mức cố định</option>
+        </select>
+        <input type="text" id="ins-fixed" style="display:none; margin-top:15px;" oninput="fm(this)" placeholder="Nhập số tiền...">
+    </div>
+
+    <button class="btn-calc" onclick="mainCalc()" data-key="btn_run">Phân tích kết quả</button>
+</div>
+
+<div id="capture-zone">
+    <div class="a5-inner">
+        <div class="a5-title" id="a5-title">TAX REPORT</div>
+        <div style="width:240px; height:240px; margin: 0 auto 20px;"><canvas id="myChart"></canvas></div>
+        
+        <div class="res-row"><span data-key="res_gross">Lương Gross</span><b id="res-g"></b></div>
+        <div class="res-row"><span id="res-bh-lbl">Bảo hiểm</span><b id="res-b"></b></div>
+        <div class="res-row"><span data-key="res_tax">Thuế TNCN</span><b id="res-t" style="color:var(--blue)"></b></div>
+        
+        <div class="net-box">
+            <div class="net-label" data-key="lbl_net_res">Thực nhận (NET)</div>
+            <div class="net-val" id="res-n"></div>
+        </div>
+        
+        <div class="comp-tag" id="res-c"></div>
+        
+        <div class="footer-note" data-key="legal_txt">...</div>
+    </div>
+</div>
+
+<div class="dl-wrap" id="dl-wrap"><button class="btn-dl" onclick="takeShot()" data-key="btn_jpg">Lưu báo cáo (JPG)</button></div>
+
+<script>
+    const langDB = {
+        vi: { lbl_method:"Chế độ tính toán", lbl_worker:"Đối tượng", btn_vn:"Lao động VN", btn_for:"Nước ngoài", lbl_year:"Năm áp dụng", lbl_income_g:"Số tiền (Gross)", lbl_income_n:"Số tiền (Net)", lbl_dep:"Người phụ thuộc", lbl_extra:"Giảm trừ khác", lbl_ins:"Bảo hiểm", opt_full:"100% lương", opt_fix:"Mức cố định", btn_run:"Phân tích kết quả", res_gross:"Lương Gross", res_tax:"Thuế TNCN", lbl_net_res:"Thực nhận (NET)", btn_jpg:"Lưu báo cáo (JPG)", legal_txt:"Dữ liệu dựa trên biểu thuế lũy tiến 7 bậc và mức đóng bảo hiểm xã hội trần 46.8tr VNĐ.", comp_pre:"So với năm", save:"Tiết kiệm", pay:"Nộp thêm" },
+        en: { lbl_method:"Calculation Method", lbl_worker:"Category", btn_vn:"Local Staff", btn_for:"Foreigner", lbl_year:"Tax Year", lbl_income_g:"Amount (Gross)", lbl_income_n:"Amount (Net)", lbl_dep:"Dependents", lbl_extra:"Other Deductions", lbl_ins:"Insurance Base", opt_full:"Full Salary", opt_fix:"Fixed Amount", btn_run:"Analyze Results", res_gross:"Gross Salary", res_tax:"PIT Tax", lbl_net_res:"NET TAKE-HOME", btn_jpg:"Save Report (JPG)", legal_txt:"Based on 7-level progressive tax and Social Insurance cap of 46.8M VND.", comp_pre:"Vs", save:"Saved", pay:"Pay more" },
+        kr: { lbl_method:"계산 모드", lbl_worker:"대상자", btn_vn:"현지 직원", btn_for:"외국인", lbl_year:"적용 연도", lbl_income_g:"금액 (Gross)", lbl_income_n:"금액 (Net)", lbl_dep:"부양가족", lbl_extra:"기타 공제", lbl_ins:"보험료 기준", opt_full:"급여 100%", opt_fix:"고정 금액", btn_run:"결과 분석", res_gross:"총 급여", res_tax:"개인소득세", lbl_net_res:"실수령액 (NET)", btn_jpg:"보고서 저장 (JPG)", legal_txt:"7단계 누진세 및 사회보험 상한액 4,680만 VND 기준.", comp_pre:"대비", save:"절감", pay:"추가납부" },
+        jp: { lbl_method:"計算モード", lbl_worker:"対象区分", btn_vn:"現地スタッフ", btn_for:"外国人", lbl_year:"適用年度", lbl_income_g:"金額 (Gross)", lbl_income_n:"金額 (Net)", lbl_dep:"扶養家族", lbl_extra:"その他控除", lbl_ins:"保険料算定", opt_full:"給与100%", opt_fix:"固定額", btn_run:"分析を実行", res_gross:"総支給額", res_tax:"所得税", lbl_net_res:"手取り額 (NET)", btn_jpg:"レポートを保存 (JPG)", legal_txt:"7段階累進税率および社会保険上限4,680万VNDに基づきます。", comp_pre:"と比較", save:"節税", pay:"追徴" },
+        cn: { lbl_method:"计算模式", lbl_worker:"人员类别", btn_vn:"本地员工", btn_for:"外籍员工", lbl_year:"适用年份", lbl_income_g:"金额 (Gross)", lbl_income_n:"金额 (Net)", lbl_dep:"受抚养人", lbl_extra:"其他扣除", lbl_ins:"保险基数", opt_full:"100%全额", opt_fix:"固定基数", btn_run:"分析结果", res_gross:"总工资", res_tax:"个人所得税", lbl_net_res:"实发工资 (NET)", btn_jpg:"保存报告 (JPG)", legal_txt:"基于7级累进税率和社保上限4,680万越南盾计算。", comp_pre:"与去年相比", save:"节省", pay:"补缴" }
+    };
+
+    let cfg = { m: 'G2N', w: 'VN', y: 2026, l: 'vi' };
+    let chart = null;
+    Chart.register(ChartDataLabels);
+
+    function updateLang(l) {
+        cfg.l = l;
+        document.querySelectorAll('[data-key]').forEach(e => e.innerText = langDB[l][e.dataset.key] || e.innerText);
+        const label = document.getElementById('income-label');
+        label.innerText = cfg.m === 'G2N' ? langDB[cfg.l].lbl_income_g : langDB[cfg.l].lbl_income_n;
+    }
+
+    function setCfg(k, v, btn) {
+        document.getElementById(btn.parentNode.id).querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        cfg[k] = v;
+        if(k === 'm') updateLang(cfg.l);
+    }
+
+    function fm(i) { let v = i.value.replace(/\D/g, ""); i.value = v ? Number(v).toLocaleString('en-US') : ""; }
+    function pV(id) { return parseFloat(document.getElementById(id).value.replace(/,/g, "")) || 0; }
+    function toggleIns() { document.getElementById('ins-fixed').style.display = document.getElementById('ins-type').value === 'fixed' ? 'block' : 'none'; }
+
+    function getPIT(ti) {
+        if (ti <= 0) return 0;
+        if (ti <= 5000000) return ti * 0.05;
+        if (ti <= 10000000) return ti * 0.1 - 250000;
+        if (ti <= 18000000) return ti * 0.15 - 750000;
+        if (ti <= 32000000) return ti * 0.2 - 1650000;
+        if (ti <= 52000000) return ti * 0.25 - 3250000;
+        if (ti <= 80000000) return ti * 0.3 - 5850000;
+        return ti * 0.35 - 9850000;
+    }
+
+    function calculate(gross, year, worker, deps, extra, insType, insFix) {
+        const ceiling = 46800000;
+        const bhRate = (worker === 'VN') ? 0.105 : 0.095;
+        const bhBase = (insType === 'full') ? gross : insFix;
+        const bh = Math.min(bhBase, ceiling) * bhRate;
+        const selfGT = (year === 2026) ? 15500000 : 11000000;
+        const depGT = (year === 2026) ? 6200000 : 4400000;
+        const ti = Math.max(0, gross - bh - selfGT - (deps * depGT) - extra);
+        const tax = getPIT(ti);
+        return { bh, tax, net: gross - bh - tax, bhRate };
+    }
+
+    function mainCalc() {
+        const val = pV('val-income'); if(!val) return;
+        const deps = pV('val-deps'), extra = pV('val-extra'), it = document.getElementById('ins-type').value, ifx = pV('ins-fixed');
+        
+        let finalGross = val;
+        if (cfg.m === 'N2G') {
+            let low = val, high = val * 2;
+            for (let i = 0; i < 50; i++) {
+                let mid = (low + high) / 2;
+                if (calculate(mid, cfg.y, cfg.w, deps, extra, it, ifx).net < val) low = mid;
+                else high = mid;
+            }
+            finalGross = high;
+        }
+
+        const r = calculate(finalGross, cfg.y, cfg.w, deps, extra, it, ifx);
+        const f = n => Math.round(n).toLocaleString('en-US') + ' đ';
+
+        document.getElementById('res-g').innerText = f(finalGross);
+        document.getElementById('res-bh-lbl').innerText = (cfg.l === 'vi' ? 'Bảo hiểm' : 'Insurance') + ` (${(r.bhRate*100).toFixed(1)}%)`;
+        document.getElementById('res-b').innerText = f(r.bh);
+        document.getElementById('res-t').innerText = f(r.tax);
+        document.getElementById('res-n').innerText = f(r.net);
+        
+        let oy = cfg.y === 2026 ? 2025 : 2026;
+        let c = calculate(finalGross, oy, cfg.w, deps, extra, it, ifx);
+        let diff = Math.abs(r.tax - c.tax);
+        let status = r.tax < c.tax ? langDB[cfg.l].save : langDB[cfg.l].pay;
+        document.getElementById('res-c').innerHTML = `💡 ${langDB[cfg.l].comp_pre} <b>${oy}</b>: ${langDB[cfg.l].res_tax} <b>${f(c.tax)}</b>. ${status}: <b>${f(diff)}</b>.`;
+        
+        document.getElementById('a5-title').innerText = `TAX REPORT ${cfg.y}`;
+        updateChart(r.net, r.tax, r.bh);
+        document.getElementById('capture-zone').style.display = 'block';
+        document.getElementById('dl-wrap').style.display = 'block';
+        window.scrollTo({ top: document.getElementById('capture-zone').offsetTop - 20, behavior: 'smooth' });
+    }
+
+    function updateChart(n, t, b) {
+        const ctx = document.getElementById('myChart').getContext('2d');
+        if (chart) chart.destroy();
+        chart = new Chart(ctx, {
+            type: 'doughnut',
+            data: { 
+                labels: ['Net', 'Tax', 'Ins'], 
+                datasets: [{ 
+                    data: [n, t, b], 
+                    backgroundColor: ['#F95211', '#0284C7', '#1A1A1A'], 
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }] 
+            },
+            options: { 
+                cutout: '75%',
+                animation: { duration: 1000, easing: 'easeOutQuart' },
+                plugins: { 
+                    legend: { display: false }, 
+                    datalabels: { 
+                        color: '#fff', 
+                        font: { weight: '800', size: 12, family: 'Inter' }, 
+                        formatter: (v) => v > 0 ? (v/1000000).toFixed(1) + 'M' : '' 
+                    } 
+                } 
+            }
+        });
+    }
+
+    function takeShot() {
+        const zone = document.getElementById('capture-zone');
+        html2canvas(zone, { scale: 3, backgroundColor: '#F8FAFC' }).then(canvas => {
+            const link = document.createElement('a');
+            link.download = `TaxReport_${cfg.y}_${cfg.m}.jpg`;
+            link.href = canvas.toDataURL("image/jpeg", 0.95);
+            link.click();
+        });
+    }
+    updateLang('vi');
+</script>
+</body>
+</html>
